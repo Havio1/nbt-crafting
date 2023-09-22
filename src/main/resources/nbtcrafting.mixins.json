@@ -1,7 +1,7 @@
 {
 	"required": true,
 	"package": "de.siphalor.nbtcrafting.mixin",
-	"compatibilityLevel": "JAVA_8",
+	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"MixinIngredient",
 		"MixinInputSlotFiller",
