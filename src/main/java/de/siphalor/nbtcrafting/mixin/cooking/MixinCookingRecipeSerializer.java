@@ -19,6 +19,7 @@ package de.siphalor.nbtcrafting.mixin.cooking;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.AbstractCookingRecipe;
@@ -56,7 +57,11 @@ public abstract class MixinCookingRecipeSerializer {
 	}
 
 	@Inject(method = "read(Lnet/minecraft/util/Identifier;Lcom/google/gson/JsonObject;)Lnet/minecraft/recipe/AbstractCookingRecipe;", at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-	public void onRecipeReady(Identifier identifier, JsonObject jsonObject, CallbackInfoReturnable<AbstractCookingRecipe> callbackInfoReturnable, String group, CookingRecipeCategory cookingRecipeCategory, JsonElement ingredientJson, Ingredient ingredient, String itemId, Identifier itemIdentifier, ItemStack itemStack, float experience, int cookingTime) {
+	public void onRecipeReady(Identifier identifier, JsonObject jsonObject, CallbackInfoReturnable<AbstractCookingRecipe> callbackInfoReturnable) {
+		String string2 = JsonHelper.getString(jsonObject, "result");
+		Identifier identifier2 = new Identifier(string2);
+		ItemStack itemStack = new ItemStack(Registries.ITEM.getOrEmpty(identifier2).orElseThrow(() -> new IllegalStateException("Item: " + string2 + " does not exist")));
+
 		//noinspection ConstantConditions
 		((IItemStack) (Object) itemStack).nbtCrafting$setRawTag(resultTag);
 	}

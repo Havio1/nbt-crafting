@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -58,6 +57,8 @@ public abstract class MixinShapedRecipe {
 	@Final
 	DefaultedList<Ingredient> input;
 
+
+	//Changed this for Forgified-Fabric-API compatibility
 	@Inject(method = "outputFromJson", at = @At("HEAD"))
 	private static void handlePotions(JsonObject json, CallbackInfoReturnable<ItemStack> ci) {
 		if (json.has("potion")) {
@@ -77,9 +78,9 @@ public abstract class MixinShapedRecipe {
 
 	@Inject(
 			method = "outputFromJson",
-			at = @At(value = "INVOKE", target = "com/google/gson/JsonObject.has(Ljava/lang/String;)Z", remap = false)
+			at = @At(value = "HEAD")
 	)
-	private static void deserializeItemStack(JsonObject json, CallbackInfoReturnable<ItemStack> ci) {
+	private static void deserializeItemStack(JsonObject json, CallbackInfoReturnable<ItemStack> cir) {
 		NbtCrafting.clearLastReadNbt();
 		if (json.has("data")) {
 			if (JsonHelper.hasString(json, "data")) {
@@ -96,8 +97,15 @@ public abstract class MixinShapedRecipe {
 	}
 
 	@Inject(
-			method = "outputFromJson", at = @At("RETURN"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-	private static void constructDeserializedItemStack(JsonObject json, CallbackInfoReturnable<ItemStack> ci, Item item, int amount) {
+			method = "outputFromJson", at = @At("RETURN"),
+			cancellable = true,
+			locals = LocalCapture.CAPTURE_FAILHARD
+	)
+	private static void constructDeserializedItemStack(JsonObject json, CallbackInfoReturnable<ItemStack> ci) {
+		//Changed this for Forgified-Fabric-API compatibility
+		Item item = ci.getReturnValue().getItem();
+		int amount=  ci.getReturnValue().getCount();
+
 		ItemStack stack = new ItemStack(item, amount);
 		if (NbtCrafting.hasLastReadNbt()) {
 			NbtCompound lastReadNbt = NbtCrafting.useLastReadNbt();
